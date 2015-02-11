@@ -40,23 +40,34 @@ public class WePayClient {
 
 //        System.out.println(client.registerMerchant()) ;
 
-        CheckoutUri checkoutResponse =  client.createCheckout(143865178L, 2981050165L);
-        System.out.println("Checkout URI: " + checkoutResponse.getCheckoutUri() + "\nCheckoutId: " + checkoutResponse.getCheckoutId());
+//--------Creating a Checkout
+//        CheckoutUri checkoutResponse =  client.createCheckout(143865178L, 0L, new BigDecimal(20.00));
+//        System.out.println("Checkout URI: " + checkoutResponse.getCheckoutUri() + "\nCheckoutId: " + checkoutResponse.getCheckoutId());
+
+//------------- VIEWING A CHECKOUT
+//        System.out.println(client.viewCheckout(1133675447L));
+
+
+System.out.println(client.viewCreditCard(2L));
+
+// ------------------ CREATE CREDIT CARD ID
+//       String ccId = client.createCreditCardId();
+//System.out.println(ccId);
+
+//        System.out.println(client.authorizeCard(Long.valueOf(ccId)));
 
 //        CheckoutState state = client.refund(2028095370L, "Testing full refund of a pending payment", null);
-//        CheckoutState state = client.voidPayment(2028095370L, "Testing void");
-//        String cc = client.createCreditCardId();
-//
-//        System.out.println(cc);
+
+
 //                                                 client.deleteCreditCard(213213L);
 
 //                                                 System.out.println(client.viewAccount(143865178L));
-//                                                 System.out.println(client.viewCheckout(1292672920L));
+
 //                                                 System.out.println(client.viewUser(ACCESS_TOKEN));
                                              } catch (WePayException wpe) {
-                                                System.out.println("Error: " + wpe.getErrorCode() + "\nText: " + wpe.getErrorText() + "\nType: " + wpe.getErrorType());
-                                             }
-                                             catch (IOException e) {
+                                                System.out.println("Error Code: " + wpe.getErrorCode() + "\nText: " + wpe.getErrorText() + "\nType:+ " + wpe.getErrorType());
+                                                 System.out.println("Error: " + wpe.getError());
+                                             } catch (IOException e) {
                                                  e.printStackTrace();
                                              }
 
@@ -140,14 +151,14 @@ public class WePayClient {
          */
     }
 
-    public CheckoutUri createCheckout(Long accountId, Long ccId) throws IOException, WePayException {
+    public CheckoutUri createCheckout(Long accountId, Long ccId, BigDecimal amount) throws IOException, WePayException {
         CheckoutCreateRequest createRequest = new CheckoutCreateRequest();
         createRequest.setAccountId(accountId);
         createRequest.setShortDescription("A test charge4");
 //        createRequest.setLongDescription(("");
 //        createRequest.setReferenceId("");
         createRequest.setType(Constants.PaymentType.GOODS);
-        createRequest.setAmount(new BigDecimal(12.00));
+        createRequest.setAmount(amount);
         createRequest.setPaymentMethodType("credit_card");
         createRequest.setPaymentMethodId(ccId);
         createRequest.setAutoCapture(true);   //In order to automatically capture the funds, instead of making a separate capture() call
@@ -159,7 +170,19 @@ public class WePayClient {
 
         /*
         Checkouts expire 30 minutes after they are created if there is no activity on them (e.g. they were abandoned after creation).
-         */
+
+        If creating a checkout without a credit card id, or a credit card id which does not exist in WePay..
+        succfessful checkout with state=new
+        */
+
+    }
+
+    public CreditCard viewCreditCard(Long ccId) throws IOException, WePayException {
+        CreditCardRequest request = new CreditCardRequest();
+        request.setClientId(OAUTH_CLIENT_ID);
+        request.setClientSecret(OAUTH_SECRET);
+        request.setCreditCardId(ccId);
+        return api.execute(ACCESS_TOKEN, request);
 
     }
 
@@ -225,6 +248,16 @@ public class WePayClient {
             "access_denied: this credit card does not exist or does not belong to the app"
 
          */
+
+    }
+
+    public CreditCard authorizeCard(Long ccId)  throws IOException, WePayException {
+        CreditCardAuthorizeRequest request = new CreditCardAuthorizeRequest();
+        request.setClientId(OAUTH_CLIENT_ID);
+        request.setClientSecret(OAUTH_SECRET);
+        request.setCreditCardId(ccId);
+
+        return api.execute(ACCESS_TOKEN, request);
 
     }
 
